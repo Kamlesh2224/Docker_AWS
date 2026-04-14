@@ -1,6 +1,5 @@
 import express from "express"
 import { createServer } from "http"
-import { console } from "inspector/promises"
 import { Server } from "socket.io"
 import { YSocketIO } from "y-socket.io/dist/server"
 
