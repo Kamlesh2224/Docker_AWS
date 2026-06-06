@@ -34,32 +34,25 @@ function App() {
 
   useEffect(() => {
     if (username) {
-      const provider = new SocketIOProvider(
-        "http://localhost:3000",
-        "monaco",
-        ydoc,
-        {
-          autoConnect: true,
-        },
-      );
+      const provider = new SocketIOProvider("/", "monaco", ydoc, {
+        autoConnect: true,
+      });
 
       provider.awareness.setLocalStateField("user", { username });
 
-      const states = Array.from(provider.awareness.getStates().values());
-      setUsers(
-        states
-          .filter((state) => state.user && state.user.username)
-          .map((state) => state.user),
-      );
-
-      provider.awareness.on("change", () => {
+      const updateUsers = () => {
         const states = Array.from(provider.awareness.getStates().values());
+
         setUsers(
           states
             .filter((state) => state.user && state.user.username)
             .map((state) => state.user),
         );
-      });
+      };
+
+      updateUsers();
+
+      provider.awareness.on("change", updateUsers);
 
       function handleBeforeUnload() {
         provider.awareness.setLocalStateField("user", null);
@@ -68,11 +61,12 @@ function App() {
       window.addEventListener("beforeunload", handleBeforeUnload);
 
       return () => {
+        provider.awareness.off("change", updateUsers);
         provider.disconnect();
         window.removeEventListener("beforeunload", handleBeforeUnload);
       };
     }
-  }, [username]);
+  }, [username, ydoc]);
 
   if (!username) {
     return (
